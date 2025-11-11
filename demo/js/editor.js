@@ -5,7 +5,10 @@ document.addEventListener('DOMContentLoaded', function() {
     frames: [],
     selectedFrameIndex: null,
     selectedVariation: null,
-    editedFrames: new Set()
+    editedFrames: new Set(),
+    videoFile: null,
+    videoLoaded: false,
+    insertedVideos: [] // Track videos to be inserted before the main video
   };
 
   // DOM elements
@@ -16,25 +19,140 @@ document.addEventListener('DOMContentLoaded', function() {
   const pickFrameBtn = document.getElementById('pick-frame-btn');
   const exportBtn = document.getElementById('export-btn');
   const backBtn = document.getElementById('back-btn');
-  const playBtn = document.getElementById('play-btn');
-  const videoPreview = document.getElementById('video-preview');
 
-  // Initialize frames
-  function initializeFrames() {
-    const frameColors = ['1a1a1a', '2a2a2a', '1a2a2a', '2a1a2a', '1a2a1a', '2a2a1a'];
-    const frameTimes = ['0:00', '0:15', '0:30', '0:45', '1:00', '1:15'];
+  // Video upload elements
+  const uploadArea = document.getElementById('upload-area');
+  const videoPlayerArea = document.getElementById('video-player-area');
+  const videoInput = document.getElementById('video-input');
+  const uploadBtn = document.getElementById('upload-btn');
+  const videoElement = document.getElementById('video-element');
+  const changeVideoBtn = document.getElementById('change-video-btn');
+  const extractFramesBtn = document.getElementById('extract-frames-btn');
 
-    for (let i = 0; i < 6; i++) {
-      const frame = {
-        id: i,
-        url: `https://placehold.co/640x360/${frameColors[i]}/34D399?text=Frame+${i + 1}`,
-        timestamp: frameTimes[i],
-        edited: false
-      };
-      state.frames.push(frame);
+  // Video upload and loading functions
+  function handleVideoUpload() {
+    videoInput.click();
+  }
+
+  function loadVideo(file) {
+    if (!file || !file.type.startsWith('video/')) {
+      showNotification('Please select a valid video file');
+      return;
     }
 
+    state.videoFile = file;
+    const videoURL = URL.createObjectURL(file);
+
+    videoElement.src = videoURL;
+    videoElement.load();
+
+    videoElement.onloadedmetadata = () => {
+      state.videoLoaded = true;
+      uploadArea.classList.add('hidden');
+      videoPlayerArea.classList.remove('hidden');
+
+      showNotification('Video loaded successfully! Click "Extract Frames" to continue.');
+    };
+
+    videoElement.onerror = () => {
+      showNotification('Error loading video. Please try another file.');
+      state.videoLoaded = false;
+    };
+  }
+
+  function changeVideo() {
+    state.videoFile = null;
+    state.videoLoaded = false;
+    state.frames = [];
+    state.selectedFrameIndex = null;
+
+    videoElement.src = '';
+    uploadArea.classList.remove('hidden');
+    videoPlayerArea.classList.add('hidden');
+
     renderFrames();
+    chatContainer.innerHTML = `
+      <div class="text-center text-gray-500 py-8">
+        <span class="material-symbols-outlined text-6xl mb-2">photo_library</span>
+        <p class="text-sm">Select a frame to start editing with AI</p>
+      </div>
+    `;
+
+    chatInput.disabled = true;
+    sendBtn.disabled = true;
+    pickFrameBtn.disabled = true;
+  }
+
+  // Extract frames from video
+  async function extractFrames() {
+    if (!state.videoLoaded) {
+      showNotification('Please load a video first');
+      return;
+    }
+
+    showNotification('Extracting frames from video...');
+    extractFramesBtn.disabled = true;
+    extractFramesBtn.innerHTML = '<span class="loading-spinner"></span><span style="margin-left: 8px;">Extracting...</span>';
+
+    state.frames = [];
+    const duration = videoElement.duration;
+    const numberOfFrames = 6;
+    const interval = duration / (numberOfFrames + 1);
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    // Set canvas size to video dimensions
+    canvas.width = videoElement.videoWidth || 640;
+    canvas.height = videoElement.videoHeight || 360;
+
+    try {
+      for (let i = 1; i <= numberOfFrames; i++) {
+        const timestamp = interval * i;
+        const frameData = await captureFrameAt(videoElement, canvas, ctx, timestamp);
+
+        const minutes = Math.floor(timestamp / 60);
+        const seconds = Math.floor(timestamp % 60);
+        const timeString = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+        state.frames.push({
+          id: i - 1,
+          url: frameData,
+          timestamp: timeString,
+          edited: false
+        });
+      }
+
+      renderFrames();
+      showNotification('Frames extracted successfully!');
+      extractFramesBtn.disabled = false;
+      extractFramesBtn.innerHTML = '<span class="material-symbols-outlined !text-xl">auto_awesome</span><span class="truncate">Extract Frames</span>';
+    } catch (error) {
+      console.error('Error extracting frames:', error);
+      showNotification('Error extracting frames. Please try again.');
+      extractFramesBtn.disabled = false;
+      extractFramesBtn.innerHTML = '<span class="material-symbols-outlined !text-xl">auto_awesome</span><span class="truncate">Extract Frames</span>';
+    }
+  }
+
+  // Capture a frame at a specific timestamp
+  function captureFrameAt(video, canvas, ctx, timestamp) {
+    return new Promise((resolve, reject) => {
+      const seekHandler = () => {
+        try {
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          const frameData = canvas.toDataURL('image/jpeg', 0.8);
+          video.removeEventListener('seeked', seekHandler);
+          resolve(frameData);
+        } catch (error) {
+          video.removeEventListener('seeked', seekHandler);
+          reject(error);
+        }
+      };
+
+      video.addEventListener('seeked', seekHandler);
+      video.currentTime = timestamp;
+    });
   }
 
   // Render frames grid
@@ -51,6 +169,15 @@ document.addEventListener('DOMContentLoaded', function() {
       frameNumber.className = 'frame-number';
       frameNumber.textContent = frame.timestamp;
       frameCard.appendChild(frameNumber);
+
+      // Add video indicator if video is inserted
+      if (frame.hasVideo) {
+        const videoIndicator = document.createElement('div');
+        videoIndicator.className = 'video-indicator';
+        videoIndicator.innerHTML = '<span class="material-symbols-outlined">movie</span>';
+        videoIndicator.title = 'Video clip will be inserted';
+        frameCard.appendChild(videoIndicator);
+      }
 
       frameCard.addEventListener('click', () => selectFrame(index));
 
@@ -196,26 +323,41 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // Generate dummy variation URLs
+  // Generate variation URLs from actual images
   function generateVariations() {
-    const colors = ['34D399', '10B981', '059669', '047857'];
-    return colors.map((color, i) =>
-      `https://placehold.co/640x360/1a1a1a/${color}?text=Variation+${i + 1}`
-    );
+    return [
+      'images/correct.png',
+      'images/sample.jpg',
+      'images/sample2.jpg',
+      'images/sample3.jpg'
+    ];
   }
 
-  // Apply selected variation to frame
+  // Apply selected variation to frame (inserts video before main video)
   function applyVariationToFrame() {
     if (state.selectedFrameIndex === null || !state.selectedVariation) return;
 
     const frame = state.frames[state.selectedFrameIndex];
-    frame.url = state.selectedVariation;
+
+    // Insert the generated video before the main video
+    const videoClip = {
+      path: 'videos/Mansion_Promotion_Video_Generated.mp4',
+      frameIndex: state.selectedFrameIndex,
+      timestamp: frame.timestamp,
+      insertedAt: new Date().toISOString()
+    };
+
+    state.insertedVideos.push(videoClip);
+
+    // Update frame to show it has a video inserted
+    frame.url = 'images/correct.png';
     frame.edited = true;
+    frame.hasVideo = true;
 
     state.editedFrames.add(state.selectedFrameIndex);
 
     renderFrames();
-    showNotification('Frame updated successfully!');
+    showNotification(`Video clip inserted! ${state.insertedVideos.length} video(s) will be added before your main video.`);
 
     // Reset selection
     state.selectedVariation = null;
@@ -280,17 +422,44 @@ document.addEventListener('DOMContentLoaded', function() {
     window.location.href = 'index.html';
   });
 
-  playBtn.addEventListener('click', () => {
-    showNotification('Video playback (Mock - no actual video)');
+  // Video upload event listeners
+  uploadBtn.addEventListener('click', handleVideoUpload);
 
-    // Simulate playing by changing the button
-    playBtn.innerHTML = '<span class="material-symbols-outlined !text-4xl">pause</span>';
-
-    setTimeout(() => {
-      playBtn.innerHTML = '<span class="material-symbols-outlined !text-4xl">play_arrow</span>';
-    }, 3000);
+  videoInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      loadVideo(file);
+    }
   });
 
-  // Initialize
-  initializeFrames();
+  changeVideoBtn.addEventListener('click', changeVideo);
+
+  extractFramesBtn.addEventListener('click', extractFrames);
+
+  // Drag and drop support for video upload
+  const uploadAreaElement = uploadArea.querySelector('div');
+  uploadAreaElement.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    uploadAreaElement.style.borderColor = '#34D399';
+  });
+
+  uploadAreaElement.addEventListener('dragleave', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    uploadAreaElement.style.borderColor = '#374151';
+  });
+
+  uploadAreaElement.addEventListener('drop', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    uploadAreaElement.style.borderColor = '#374151';
+
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('video/')) {
+      loadVideo(file);
+    } else {
+      showNotification('Please drop a valid video file');
+    }
+  });
 });
