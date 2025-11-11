@@ -27,7 +27,6 @@ document.addEventListener('DOMContentLoaded', function() {
   const uploadBtn = document.getElementById('upload-btn');
   const videoElement = document.getElementById('video-element');
   const changeVideoBtn = document.getElementById('change-video-btn');
-  const extractFramesBtn = document.getElementById('extract-frames-btn');
 
   // Video upload and loading functions
   function handleVideoUpload() {
@@ -46,12 +45,12 @@ document.addEventListener('DOMContentLoaded', function() {
     videoElement.src = videoURL;
     videoElement.load();
 
-    videoElement.onloadedmetadata = () => {
+    videoElement.onloadedmetadata = async () => {
       state.videoLoaded = true;
       uploadArea.classList.add('hidden');
       videoPlayerArea.classList.remove('hidden');
 
-      showNotification('Video loaded successfully! Click "Extract Frames" to continue.');
+      await extractFrames();
     };
 
     videoElement.onerror = () => {
@@ -91,8 +90,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     showNotification('Extracting frames from video...');
-    extractFramesBtn.disabled = true;
-    extractFramesBtn.innerHTML = '<span class="loading-spinner"></span><span style="margin-left: 8px;">Extracting...</span>';
 
     state.frames = [];
     const duration = videoElement.duration;
@@ -125,13 +122,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
       renderFrames();
       showNotification('Frames extracted successfully!');
-      extractFramesBtn.disabled = false;
-      extractFramesBtn.innerHTML = '<span class="material-symbols-outlined !text-xl">auto_awesome</span><span class="truncate">Extract Frames</span>';
     } catch (error) {
       console.error('Error extracting frames:', error);
       showNotification('Error extracting frames. Please try again.');
-      extractFramesBtn.disabled = false;
-      extractFramesBtn.innerHTML = '<span class="material-symbols-outlined !text-xl">auto_awesome</span><span class="truncate">Extract Frames</span>';
     }
   }
 
@@ -445,8 +438,6 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   changeVideoBtn.addEventListener('click', changeVideo);
-
-  extractFramesBtn.addEventListener('click', extractFrames);
 
   // Drag and drop support for video upload
   const uploadAreaElement = uploadArea.querySelector('div');
