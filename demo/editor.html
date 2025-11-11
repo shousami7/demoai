@@ -91,16 +91,11 @@
           <div class="aspect-video rounded-xl overflow-hidden bg-black flex items-center justify-center relative" id="video-container">
             <video id="video-element" class="w-full h-full object-contain" controls></video>
           </div>
-          <div class="flex items-center justify-between mt-4">
-            <button id="change-video-btn" class="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#374151] text-white text-sm font-medium leading-normal hover:bg-[#4B5563] transition-colors gap-2">
-              <span class="material-symbols-outlined !text-xl">swap_horiz</span>
-              <span class="truncate">Change Video</span>
-            </button>
-          </div>
+          
         </div>
 
         <!-- Frames Grid -->
-        <div class="w-full max-w-5xl mx-auto">
+        <div class="w-full">
           <h3 class="text-white text-lg font-bold mb-4">Video Frames</h3>
           <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4" id="frames-grid">
             <!-- Frames will be inserted here by JS -->
@@ -128,11 +123,37 @@
 
         <!-- Input Area -->
         <div class="p-4 border-t border-[#374151]">
-          <div class="relative">
-            <input id="chat-input" class="w-full h-12 bg-[#374151] text-gray-300 placeholder-gray-500 rounded-lg pl-4 pr-12 border-2 border-transparent focus:border-primary focus:ring-0 transition-colors" placeholder="Describe the edit you want..." type="text" disabled/>
-            <button id="send-btn" class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center size-8 bg-primary rounded-md text-black hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-              <span class="material-symbols-outlined !text-xl">arrow_upward</span>
+          <!-- Preview Container (hidden by default) -->
+          <div id="image-preview-container" class="hidden mb-2 relative">
+            <img id="image-preview" class="w-full rounded-lg" style="max-height: 150px; object-fit: cover;" />
+            <button id="remove-image-btn" class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors">
+              <span class="material-symbols-outlined !text-base">close</span>
             </button>
+          </div>
+          <input type="file" id="image-upload-input" accept="image/*" class="hidden" />
+          
+          <div class="flex items-center w-full h-12 bg-[#374151] rounded-lg border-2 border-transparent focus-within:border-[#34D399] transition-colors">
+
+              <button 
+                  id="attach-file-btn" 
+                  class="flex items-center justify-center h-full w-12 flex-shrink-0 text-gray-400 hover:text-gray-200 transition-colors"
+                  aria-label="Attach file"
+              >
+                  <span class="material-symbols-outlined !text-xl">attach_file</span>
+              </button>
+
+              <input 
+                  id="chat-input" 
+                  class="w-full h-full bg-transparent text-gray-300 placeholder-gray-500 px-2 border-0 focus:ring-0" 
+                  placeholder="Describe the edit you want..."
+              />
+              
+              <button 
+                  id="send-btn" 
+                  class="flex items-center justify-center size-8 bg-[#34D399] rounded-md text-black hover:opacity-90 transition-opacity m-2 flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                  <span class="material-symbols-outlined !text-xl">arrow_upward</span>
+              </button>
           </div>
         </div>
       </aside>

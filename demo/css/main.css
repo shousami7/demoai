@@ -29,7 +29,7 @@
   animation: checkmark-pop 0.3s ease-out;
 }
 
-@keyframes checkmark-pop {
+ @keyframes checkmark-pop {
   0% {
     transform: scale(0);
     opacity: 0;
@@ -45,7 +45,8 @@
 
 /* Progress bar animation */
 #progress-bar {
-  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  /* ★★★ 以下の transition に変更 ★★★ */
+  transition: width 0.1s linear;
 }
 
 /* Button loading state */
@@ -69,14 +70,14 @@
   animation: spin 0.8s linear infinite;
 }
 
-@keyframes spin {
+ @keyframes spin {
   to {
     transform: rotate(360deg);
   }
 }
 
 /* Slide in animation for completion section */
-@keyframes slideIn {
+ @keyframes slideIn {
   from {
     opacity: 0;
     transform: translateY(-20px);
@@ -99,7 +100,7 @@
 }
 
 /* Pulse animation for generating state */
-@keyframes pulse {
+ @keyframes pulse {
   0%, 100% {
     opacity: 1;
   }

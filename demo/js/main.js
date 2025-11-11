@@ -95,19 +95,43 @@ document.addEventListener('DOMContentLoaded', function() {
     generateBtn.disabled = true;
     generateBtn.classList.add('btn-loading');
     btnText.textContent = 'Generating...';
+    
+    // ゲージを0%にリセット
+    progressBar.style.width = '0%';
+    progressText.textContent = '0%';
 
-    // Simulate video generation with progress
-    let generationProgress = 0;
-    const interval = setInterval(() => {
-      generationProgress += 1;
+    const duration = 6000; // 6秒間 (6000ミリ秒)
+    let startTime = null;
+
+    function animateProgress(timestamp) {
+      if (!startTime) startTime = timestamp; // 最初のフレームで開始時間を記録
+      
+      const elapsedTime = timestamp - startTime; // 経過時間
+      
+      if (elapsedTime >= duration) {
+        // 6秒経過したら 100% にして終了
+        progressBar.style.width = '100%';
+        progressText.textContent = '100%';
+        onGenerationComplete();
+        return;
+      }
+
+      // イーズイン（加速）の計算 (t^2)
+      // progress は 0.0 から 1.0 の値
+      const progress = (elapsedTime / duration) ** 2; 
+
+      // 実際のパーセンテージ（0から100）
+      const generationProgress = Math.min(Math.floor(progress * 100), 100);
+
       progressBar.style.width = `${generationProgress}%`;
       progressText.textContent = `${generationProgress}%`;
 
-      if (generationProgress >= 100) {
-        clearInterval(interval);
-        onGenerationComplete();
-      }
-    }, 30); // 3 seconds total (100 * 30ms)
+      // 次のフレームを要求
+      requestAnimationFrame(animateProgress);
+    }
+
+    // アニメーションを開始
+    requestAnimationFrame(animateProgress);
   });
 
   // On generation complete
@@ -162,23 +186,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 3000);
   }
 
-  // Check if returning from editor
-  const videoGenerated = sessionStorage.getItem('videoGenerated');
-  if (videoGenerated === 'true') {
-    // Restore state
-    const uploadedFiles = JSON.parse(sessionStorage.getItem('uploadedFiles') || '[]');
+  // ★★★ リフレッシュで状態を復元する処理は、ここから削除されています ★★★
 
-    uploadedFiles.forEach(uploadId => {
-      state.uploadedFiles.add(uploadId);
-      const card = document.querySelector(`[data-upload-id="${uploadId}"]`);
-      if (card) {
-        card.classList.add('uploaded');
-        const filenameDisplay = card.querySelector('.upload-filename');
-        filenameDisplay.textContent = 'image.jpg';
-      }
-    });
-
-    updateProgress();
-    onGenerationComplete();
-  }
 });

@@ -8,7 +8,9 @@ document.addEventListener('DOMContentLoaded', function() {
     editedFrames: new Set(),
     videoFile: null,
     videoLoaded: false,
-    insertedVideos: [] // Track videos to be inserted before the main video
+    insertedVideos: [], // Track videos to be inserted before the main video
+    uploadedImage: null, // NEW: Track uploaded image
+    generatedVideoUrl: null // NEW: Track generated video URL
   };
 
   // DOM elements
@@ -27,14 +29,73 @@ document.addEventListener('DOMContentLoaded', function() {
   const videoInput = document.getElementById('video-input');
   const uploadBtn = document.getElementById('upload-btn');
   const videoElement = document.getElementById('video-element');
-  const changeVideoBtn = document.getElementById('change-video-btn');
+  const changeVideoBtn = document = document.getElementById('change-video-btn');
 
-  // Video upload and loading functions
+  // NEW: Image upload elements
+  const imagePreviewContainer = document.getElementById('image-preview-container');
+  const imagePreview = document.getElementById('image-preview');
+  const removeImageBtn = document.getElementById('remove-image-btn');
+
+  // NEW: Check for uploaded video from main page
+  const uploadedVideoDataURL = sessionStorage.getItem('uploadedVideoDataURL');
+  const uploadedVideoType = sessionStorage.getItem('uploadedVideoType');
+
+  if (uploadedVideoDataURL && uploadedVideoType) {
+    // Create a File object from the Data URL
+    // This is a simplified approach; for large files, consider other methods
+    const videoFile = new File([dataURLtoBlob(uploadedVideoDataURL, uploadedVideoType)], 'uploaded_video.mp4', { type: uploadedVideoType });
+    loadVideo(videoFile, true); // Pass true for fromSessionStorage
+  }
+
+  // Helper function to convert Data URL to Blob
+  function dataURLtoBlob(dataurl, type) {
+    const arr = dataurl.split(',');
+    const mime = arr[0].match(/:(.*?);/)[1];
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new Blob([u8arr], { type: mime });
+  }
+
+  // ==================== NEW: Image Upload Handling ====================
+  
+  imageUploadInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file && file.type.startsWith('image/')) {
+      handleImageUpload(file);
+    }
+  });
+
+  function handleImageUpload(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      state.uploadedImage = file;
+      imagePreview.src = e.target.result;
+      imagePreviewContainer.classList.remove('hidden');
+      
+      // Add user message showing uploaded image
+      addUserMessage(`<img src="${e.target.result}" class="rounded-lg" style="max-width: 100%; max-height: 200px; object-fit: contain;" />`);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  removeImageBtn.addEventListener('click', () => {
+    state.uploadedImage = null;
+    imagePreviewContainer.classList.add('hidden');
+    imagePreview.src = '';
+    imageUploadInput.value = '';
+  });
+
+  // ==================== Video Upload and Loading ====================
+  
   function handleVideoUpload() {
     videoInput.click();
   }
 
-  function loadVideo(file) {
+  function loadVideo(file, fromSessionStorage = false) {
     if (!file || !file.type.startsWith('video/')) {
       showNotification('Please select a valid video file');
       return;
@@ -53,6 +114,11 @@ document.addEventListener('DOMContentLoaded', function() {
       chatPanel.classList.remove('hidden');
 
       await extractFrames();
+
+      if (fromSessionStorage) {
+        sessionStorage.removeItem('uploadedVideoDataURL');
+        sessionStorage.removeItem('uploadedVideoType');
+      }
     };
 
     videoElement.onerror = () => {
@@ -85,7 +151,8 @@ document.addEventListener('DOMContentLoaded', function() {
     pickFrameBtn.disabled = true;
   }
 
-  // Extract frames from video
+  // ==================== Frame Extraction ====================
+  
   async function extractFrames() {
     if (!state.videoLoaded) {
       showNotification('Please load a video first');
@@ -102,7 +169,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
 
-    // Set canvas size to video dimensions
     canvas.width = videoElement.videoWidth || 640;
     canvas.height = videoElement.videoHeight || 360;
 
@@ -119,7 +185,8 @@ document.addEventListener('DOMContentLoaded', function() {
           id: i - 1,
           url: frameData,
           timestamp: timeString,
-          edited: false
+          edited: false,
+          hasVideo: false
         });
       }
 
@@ -131,27 +198,33 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  // Capture a frame at a specific timestamp
   function captureFrameAt(video, canvas, ctx, timestamp) {
     return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject(new Error('Frame capture timed out'));
+      }, 3000); // 3-second timeout
+
       const seekHandler = () => {
-        try {
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-          const frameData = canvas.toDataURL('image/jpeg', 0.8);
-          video.removeEventListener('seeked', seekHandler);
-          resolve(frameData);
-        } catch (error) {
-          video.removeEventListener('seeked', seekHandler);
-          reject(error);
-        }
+        clearTimeout(timeout);
+        // A small delay to allow the frame to be painted
+        setTimeout(() => {
+          try {
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const frameData = canvas.toDataURL('image/jpeg', 0.8);
+            resolve(frameData);
+          } catch (error) {
+            reject(error);
+          }
+        }, 50); // 50ms delay
       };
 
-      video.addEventListener('seeked', seekHandler);
+      video.addEventListener('seeked', seekHandler, { once: true });
       video.currentTime = timestamp;
     });
   }
 
-  // Render frames grid
+  // ==================== Render Frames Grid ====================
+  
   function renderFrames() {
     framesGrid.innerHTML = '';
 
@@ -170,7 +243,7 @@ document.addEventListener('DOMContentLoaded', function() {
       if (frame.hasVideo) {
         const videoIndicator = document.createElement('div');
         videoIndicator.className = 'video-indicator';
-        videoIndicator.innerHTML = '<span class="material-symbols-outlined">movie</span>';
+        videoIndicator.innerHTML = '<span class="material-symbols-outlined">movie</span> Video';
         videoIndicator.title = 'Video clip will be inserted';
         frameCard.appendChild(videoIndicator);
       }
@@ -181,7 +254,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // Select frame
+  // ==================== Select Frame ====================
+  
   function selectFrame(index) {
     state.selectedFrameIndex = index;
     state.selectedVariation = null;
@@ -189,7 +263,6 @@ document.addEventListener('DOMContentLoaded', function() {
     renderFrames();
     updateChatUI();
 
-    // Enable input and button
     chatInput.disabled = false;
     sendBtn.disabled = false;
     pickFrameBtn.disabled = false;
@@ -197,7 +270,6 @@ document.addEventListener('DOMContentLoaded', function() {
     showNotification(`Frame ${index + 1} selected`);
   }
 
-  // Update chat UI with selected frame
   function updateChatUI() {
     if (state.selectedFrameIndex === null) return;
 
@@ -214,71 +286,71 @@ document.addEventListener('DOMContentLoaded', function() {
     `;
   }
 
-  // Send chat message
+  // ==================== MODIFIED: Send Message ====================
+  
   function sendMessage() {
     const message = chatInput.value.trim();
     if (!message || state.selectedFrameIndex === null) return;
 
     // Add user message
-    addUserMessage(message);
+    addUserMessage(escapeHtml(message));
 
     // Clear input
     chatInput.value = '';
 
-    // Show loading
-    // addLoadingMessage();
+    // Show loading message with 7-second delay
+    const loadingId = addAILoadingMessage('Generating video...');
+    
+    // Disable input during generation
+    chatInput.disabled = true;
+    sendBtn.disabled = true;
 
-    // Simulate AI response after 2 seconds
+    // Simulate 7-second video generation
     setTimeout(() => {
-      // removeLoadingMessage();
-      addAIResponse();
-    }, 2000);
+      // Remove loading message
+      removeMessage(loadingId);
+      
+      // Set generated video URL (pre-saved demo video)
+      state.generatedVideoUrl = 'videos/combined_video.mp4';
+      
+      // Show video preview with Apply button
+      addAIVideoResponse(state.generatedVideoUrl);
+      
+      // Re-enable input
+      chatInput.disabled = false;
+      sendBtn.disabled = false;
+      
+      // Reset uploaded image
+      state.uploadedImage = null;
+      imagePreviewContainer.classList.add('hidden');
+      imageUploadInput.value = '';
+      
+    }, 7000); // 7 seconds
   }
 
-  // Add user message to chat
-  function addUserMessage(message) {
+  // ==================== NEW: Add AI Loading Message ====================
+  
+  function addAILoadingMessage(text) {
+    const messageId = 'loading-' + Date.now();
     const messageDiv = document.createElement('div');
-    messageDiv.className = 'user-message chat-message';
+    messageDiv.id = messageId;
+    messageDiv.className = 'ai-message chat-message';
     messageDiv.innerHTML = `
-      <div class="user-avatar"></div>
-      <div class="user-message-content">${escapeHtml(message)}</div>
-    `;
-    chatContainer.appendChild(messageDiv);
-    scrollToBottom();
-  }
-
-  // Add loading message
-  /*
-  function addLoadingMessage() {
-    const loadingDiv = document.createElement('div');
-    loadingDiv.className = 'ai-message chat-message loading-message';
-    loadingDiv.id = 'loading-message';
-    loadingDiv.innerHTML = `
       <div class="ai-avatar">
         <span class="material-symbols-outlined !text-xl text-black">auto_awesome</span>
       </div>
-      <div>
-        <span class="loading-spinner"></span>
-        <span style="margin-left: 8px;">Generating variations...</span>
+      <div class="ai-message-content">
+        <p>${text}<span class="loading-dots"></span></p>
       </div>
     `;
-    chatContainer.appendChild(loadingDiv);
+    chatContainer.appendChild(messageDiv);
     scrollToBottom();
+    return messageId;
   }
-  */
 
-  // Remove loading message
-  /*
-  function removeLoadingMessage() {
-    const loadingMsg = document.getElementById('loading-message');
-    if (loadingMsg) loadingMsg.remove();
-  }
-  */
-
-  // Add AI response with image variations
-  function addAIResponse() {
-    const variations = generateVariations();
-
+  // ==================== NEW: Add AI Video Response ====================
+  
+  function addAIVideoResponse(videoUrl) {
     const messageDiv = document.createElement('div');
     messageDiv.className = 'ai-message chat-message';
     messageDiv.innerHTML = `
@@ -286,62 +358,34 @@ document.addEventListener('DOMContentLoaded', function() {
         <span class="material-symbols-outlined !text-xl text-black">auto_awesome</span>
       </div>
       <div class="ai-message-content">
-        <p style="margin-bottom: 12px;">Here are a few options based on your request:</p>
-        <div class="variations-grid" id="current-variations">
-          ${variations.map((url, i) => `
-            <div class="variation-card" data-variation-index="${i}" style="background-image: url('${url}')"></div>
-          `).join('')}
-        </div>
-        <button class="apply-btn" id="apply-variation-btn" disabled>Apply to Frame</button>
+        <p style="margin-bottom: 12px;">Video generated! Please check the preview.</p>
+        <video controls class="w-full rounded-lg mb-3" style="max-height: 300px;">
+          <source src="${videoUrl}" type="video/mp4">
+        </video>
+        <button class="apply-btn" id="apply-video-btn">Apply to Frame</button>
       </div>
     `;
 
     chatContainer.appendChild(messageDiv);
     scrollToBottom();
 
-    // Add variation selection handlers
-    const variationCards = messageDiv.querySelectorAll('.variation-card');
-    const applyBtn = messageDiv.querySelector('#apply-variation-btn');
-
-    variationCards.forEach((card, index) => {
-      card.addEventListener('click', () => {
-        // Remove previous selection
-        variationCards.forEach(c => c.classList.remove('selected-variation'));
-
-        // Select this variation
-        card.classList.add('selected-variation');
-        state.selectedVariation = variations[index];
-
-        // Enable apply button
-        applyBtn.disabled = false;
-      });
-    });
-
     // Apply button handler
+    const applyBtn = messageDiv.querySelector('#apply-video-btn');
     applyBtn.addEventListener('click', () => {
-      applyVariationToFrame();
+      applyVideoToFrame();
     });
   }
 
-  // Generate variation URLs from actual images
-  function generateVariations() {
-    return [
-      'images/correct.png',
-      'images/sample.jpg',
-      'images/sample2.jpg',
-      'images/sample3.jpg'
-    ];
-  }
-
-  // Apply selected variation to frame (inserts video before main video)
-  function applyVariationToFrame() {
-    if (state.selectedFrameIndex === null || !state.selectedVariation) return;
+  // ==================== NEW: Apply Video to Frame ====================
+  
+  function applyVideoToFrame() {
+    if (state.selectedFrameIndex === null || !state.generatedVideoUrl) return;
 
     const frame = state.frames[state.selectedFrameIndex];
 
-    // Insert the generated video before the main video
+    // Insert the generated video
     const videoClip = {
-      path: 'videos/combined_video.mp4',
+      path: state.generatedVideoUrl,
       frameIndex: state.selectedFrameIndex,
       timestamp: frame.timestamp,
       insertedAt: new Date().toISOString()
@@ -350,55 +394,65 @@ document.addEventListener('DOMContentLoaded', function() {
     state.insertedVideos.push(videoClip);
 
     // Update frame to show it has a video inserted
-    frame.url = 'images/correct.png';
+    frame.url = 'images/correct.png'; // Thumbnail showing it's been replaced
     frame.edited = true;
     frame.hasVideo = true;
 
     state.editedFrames.add(state.selectedFrameIndex);
 
     renderFrames();
-    showNotification(`Video clip inserted! ${state.insertedVideos.length} video(s) will be added before your main video.`);
+    showNotification(`✓ Video clip will be inserted at frame ${state.selectedFrameIndex + 1}`);
 
     // Display and play the combined video in the main player
-    videoPlayerArea.classList.remove('hidden');
     videoElement.src = videoClip.path;
     videoElement.load();
     videoElement.play();
 
     // Reset selection
     state.selectedVariation = null;
+    state.generatedVideoUrl = null;
   }
 
-  // Scroll chat to bottom
+  // ==================== Remove Message ====================
+  
+  function removeMessage(messageId) {
+    const msg = document.getElementById(messageId);
+    if (msg) msg.remove();
+  }
+
+  // ==================== Add User Message ====================
+  
+  function addUserMessage(content) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'user-message chat-message';
+    messageDiv.innerHTML = `
+      <div class="user-avatar"></div>
+      <div class="user-message-content">${content}</div>
+    `;
+    chatContainer.appendChild(messageDiv);
+    scrollToBottom();
+  }
+
+
+
+  // ==================== Utility Functions ====================
+  
   function scrollToBottom() {
     chatContainer.scrollTop = chatContainer.scrollHeight;
   }
 
-  // Escape HTML to prevent XSS
   function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
   }
 
-  // Show notification
   function showNotification(message) {
-    /*
-    const notification = document.createElement('div');
-    notification.className = 'notification';
-    notification.textContent = message;
-
-    document.body.appendChild(notification);
-
-    setTimeout(() => {
-      notification.style.opacity = '0';
-      notification.style.transition = 'opacity 0.3s ease';
-      setTimeout(() => notification.remove(), 300);
-    }, 3000);
-    */
+    console.log('Notification:', message);
   }
 
-  // Event listeners
+  // ==================== Event Listeners ====================
+  
   sendBtn.addEventListener('click', sendMessage);
 
   chatInput.addEventListener('keypress', (e) => {
@@ -414,11 +468,11 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   exportBtn.addEventListener('click', () => {
-    showNotification('Exporting video... (Mock export)');
+    showNotification('Exporting video...');
 
     setTimeout(() => {
       const link = document.createElement('a');
-      link.href = 'data:text/plain,Mock Edited Video File';
+      link.href = 'videos/combined_video.mp4';
       link.download = 'edited-luxury-property-video.mp4';
       link.click();
 
@@ -430,7 +484,6 @@ document.addEventListener('DOMContentLoaded', function() {
     window.location.href = 'index.html';
   });
 
-  // Video upload event listeners
   uploadBtn.addEventListener('click', handleVideoUpload);
 
   videoInput.addEventListener('change', (e) => {
@@ -442,7 +495,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
   changeVideoBtn.addEventListener('click', changeVideo);
 
-  // Drag and drop support for video upload
+
+
+  // Drag and drop support
   const uploadAreaElement = uploadArea.querySelector('div');
   uploadAreaElement.addEventListener('dragover', (e) => {
     e.preventDefault();
@@ -467,5 +522,14 @@ document.addEventListener('DOMContentLoaded', function() {
     } else {
       showNotification('Please drop a valid video file');
     }
-  });
-});
+  }); // <--- Corrected closing bracket for drop event listener
+
+  // NEW: Handle attach file button click (moved to end for robustness)
+  const attachFileBtn = document.getElementById('attach-file-btn');
+  const imageUploadInput = document.getElementById('image-upload-input'); // Declare here
+  if (attachFileBtn && imageUploadInput) {
+    attachFileBtn.addEventListener('click', () => {
+      imageUploadInput.click(); // Programmatically click the hidden file input
+    });
+  }
+}); // <--- Corrected closing bracket for DOMContentLoaded

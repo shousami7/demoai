@@ -39,8 +39,8 @@
   </style>
 </head>
 <body class="bg-background-light dark:bg-background-dark font-display text-gray-800 dark:text-gray-200 antialiased">
-  <div class="flex items-center justify-center min-h-screen p-4 sm:p-6 lg:p-8">
-    <div class="w-full max-w-4xl mx-auto">
+  <div class="flex min-h-screen p-4 sm:p-6 lg:p-8">
+    <div class="w-full max-w-4xl mx-auto pt-16">
       <div class="text-center mb-10">
         <h1 class="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white">Luxury Property AI Video Generator</h1>
         <p class="mt-4 text-lg text-gray-600 dark:text-gray-400">Upload 3 images of your property to automatically generate a stunning promotional video.</p>
@@ -49,11 +49,13 @@
       <div class="bg-white dark:bg-gray-800/50 p-8 sm:p-10 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700">
         <!-- Upload Cards -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8" id="upload-container">
-          <!-- Living Room Card -->
+          
           <div class="upload-card flex flex-col items-center p-6 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-center transition-all duration-300 hover:border-primary" data-upload-id="living-room">
-            <span class="material-symbols-outlined text-5xl text-gray-400 dark:text-gray-500 mb-3">living</span>
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">Living Room</h3>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Select a high-quality image</p>
+            <div class="flex-grow flex-shrink-0 flex flex-col items-center">
+              <span class="material-symbols-outlined text-5xl text-gray-400 dark:text-gray-500 mb-3">home</span>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">Exterior View</h3>
+              <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Building exterior and facade</p>
+            </div>
             <label class="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-md text-sm font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors" for="living-room-upload">
               <span class="material-symbols-outlined text-base">upload_file</span>
               Choose File
@@ -62,11 +64,12 @@
             <p class="upload-filename text-xs text-gray-500 dark:text-gray-400 mt-3 truncate w-full px-2 h-4"></p>
           </div>
 
-          <!-- Pool View Card -->
           <div class="upload-card flex flex-col items-center p-6 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-center transition-all duration-300 hover:border-primary" data-upload-id="pool">
-            <span class="material-symbols-outlined text-5xl text-gray-400 dark:text-gray-500 mb-3">pool</span>
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">Pool View</h3>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Showcase the exterior</p>
+            <div class="flex-grow flex-shrink-0 flex flex-col items-center">
+              <span class="material-symbols-outlined text-5xl text-gray-400 dark:text-gray-500 mb-3">living</span>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">Interior Design</h3>
+              <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Living spaces and rooms</p>
+            </div>
             <label class="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-md text-sm font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors" for="pool-upload">
               <span class="material-symbols-outlined text-base">upload_file</span>
               Choose File
@@ -75,11 +78,12 @@
             <p class="upload-filename text-xs text-gray-500 dark:text-gray-400 mt-3 truncate w-full px-2 h-4"></p>
           </div>
 
-          <!-- Kitchen View Card -->
           <div class="upload-card flex flex-col items-center p-6 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-center transition-all duration-300 hover:border-primary" data-upload-id="kitchen">
-            <span class="material-symbols-outlined text-5xl text-gray-400 dark:text-gray-500 mb-3">kitchen</span>
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">Kitchen View</h3>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Highlight the interior design</p>
+            <div class="flex-grow flex-shrink-0 flex flex-col items-center">
+              <span class="material-symbols-outlined text-5xl text-gray-400 dark:text-gray-500 mb-3">pool</span>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">Common Areas</h3>
+              <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Lobby, amenities and facilities</p>
+            </div>
             <label class="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-md text-sm font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors" for="kitchen-upload">
               <span class="material-symbols-outlined text-base">upload_file</span>
               Choose File
@@ -106,6 +110,7 @@
             <span class="material-symbols-outlined">auto_awesome</span>
             <span id="btn-text">AI Video Generation Start</span>
           </button>
+
           <button id="edit-now-btn" class="w-full bg-gray-600 dark:bg-[#374151] text-white font-bold text-lg py-4 px-6 rounded-lg flex items-center justify-center gap-3 hover:opacity-90 transition-opacity duration-300 focus:outline-none focus:ring-4 focus:ring-gray-600/50" onclick="window.location.href='editor.html'">
             <span class="material-symbols-outlined">edit</span>
             <span>Edit Now</span>
