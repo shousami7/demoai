@@ -230,11 +230,11 @@ document.addEventListener('DOMContentLoaded', function() {
     chatInput.value = '';
 
     // Show loading
-    addLoadingMessage();
+    // addLoadingMessage();
 
     // Simulate AI response after 2 seconds
     setTimeout(() => {
-      removeLoadingMessage();
+      // removeLoadingMessage();
       addAIResponse();
     }, 2000);
   }
@@ -252,6 +252,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // Add loading message
+  /*
   function addLoadingMessage() {
     const loadingDiv = document.createElement('div');
     loadingDiv.className = 'ai-message chat-message loading-message';
@@ -268,12 +269,15 @@ document.addEventListener('DOMContentLoaded', function() {
     chatContainer.appendChild(loadingDiv);
     scrollToBottom();
   }
+  */
 
   // Remove loading message
+  /*
   function removeLoadingMessage() {
     const loadingMsg = document.getElementById('loading-message');
     if (loadingMsg) loadingMsg.remove();
   }
+  */
 
   // Add AI response with image variations
   function addAIResponse() {
