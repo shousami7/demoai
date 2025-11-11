@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const pickFrameBtn = document.getElementById('pick-frame-btn');
   const exportBtn = document.getElementById('export-btn');
   const backBtn = document.getElementById('back-btn');
+  const chatPanel = document.getElementById('chat-panel');
 
   // Video upload elements
   const uploadArea = document.getElementById('upload-area');
@@ -49,6 +50,7 @@ document.addEventListener('DOMContentLoaded', function() {
       state.videoLoaded = true;
       uploadArea.classList.add('hidden');
       videoPlayerArea.classList.remove('hidden');
+      chatPanel.classList.remove('hidden');
 
       await extractFrames();
     };
@@ -68,6 +70,7 @@ document.addEventListener('DOMContentLoaded', function() {
     videoElement.src = '';
     uploadArea.classList.remove('hidden');
     videoPlayerArea.classList.add('hidden');
+    chatPanel.classList.add('hidden');
 
     renderFrames();
     chatContainer.innerHTML = `
