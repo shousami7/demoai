@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const completionSection = document.getElementById('completion-section');
   const downloadBtn = document.getElementById('download-btn');
   const editFramesBtn = document.getElementById('edit-frames-btn');
+  const editNowBtn = document.getElementById('edit-now-btn');
 
   // Initialize file upload handlers
   uploadInputs.forEach((input, index) => {
@@ -67,7 +68,7 @@ document.addEventListener('DOMContentLoaded', function() {
     updateProgress();
 
     // Show success message briefly
-    showNotification(`${file.name} uploaded successfully!`);
+    // showNotification(`${file.name} uploaded successfully!`);
   }
 
   // Update progress bar
@@ -121,6 +122,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
       // Hide generate button
       generateBtn.style.display = 'none';
+      editNowBtn.style.display = 'none';
     }, 500);
   }
 
