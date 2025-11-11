@@ -29,12 +29,14 @@ document.addEventListener('DOMContentLoaded', function() {
   const videoInput = document.getElementById('video-input');
   const uploadBtn = document.getElementById('upload-btn');
   const videoElement = document.getElementById('video-element');
-  const changeVideoBtn = document = document.getElementById('change-video-btn');
+  const changeVideoBtn = document.getElementById('change-video-btn');
 
   // NEW: Image upload elements
   const imagePreviewContainer = document.getElementById('image-preview-container');
   const imagePreview = document.getElementById('image-preview');
   const removeImageBtn = document.getElementById('remove-image-btn');
+  const imageUploadInput = document.getElementById('image-upload-input'); // Declare here
+  const attachFileBtn = document.getElementById('attach-file-btn');
 
   // NEW: Check for uploaded video from main page
   const uploadedVideoDataURL = sessionStorage.getItem('uploadedVideoDataURL');
@@ -62,13 +64,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // ==================== NEW: Image Upload Handling ====================
   
-  imageUploadInput.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (file && file.type.startsWith('image/')) {
-      handleImageUpload(file);
-    }
-  });
-
   function handleImageUpload(file) {
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -493,7 +488,22 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
-  changeVideoBtn.addEventListener('click', changeVideo);
+  if (changeVideoBtn) {
+    changeVideoBtn.addEventListener('click', changeVideo);
+  }
+
+  imageUploadInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file && file.type.startsWith('image/')) {
+      handleImageUpload(file);
+    }
+  });
+
+  if (attachFileBtn && imageUploadInput) {
+    attachFileBtn.addEventListener('click', () => {
+      imageUploadInput.click(); // Programmatically click the hidden file input
+    });
+  }
 
 
 
@@ -524,9 +534,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }); // <--- Corrected closing bracket for drop event listener
 
-  // NEW: Handle attach file button click (moved to end for robustness)
-  const attachFileBtn = document.getElementById('attach-file-btn');
-  const imageUploadInput = document.getElementById('image-upload-input'); // Declare here
   if (attachFileBtn && imageUploadInput) {
     attachFileBtn.addEventListener('click', () => {
       imageUploadInput.click(); // Programmatically click the hidden file input
