@@ -383,6 +383,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Show notification
   function showNotification(message) {
+    /*
     const notification = document.createElement('div');
     notification.className = 'notification';
     notification.textContent = message;
@@ -394,6 +395,7 @@ document.addEventListener('DOMContentLoaded', function() {
       notification.style.transition = 'opacity 0.3s ease';
       setTimeout(() => notification.remove(), 300);
     }, 3000);
+    */
   }
 
   // Event listeners
