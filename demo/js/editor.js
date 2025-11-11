@@ -341,7 +341,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Insert the generated video before the main video
     const videoClip = {
-      path: 'videos/Mansion_Promotion_Video_Generated.mp4',
+      path: 'videos/combined_video.mp4',
       frameIndex: state.selectedFrameIndex,
       timestamp: frame.timestamp,
       insertedAt: new Date().toISOString()
@@ -358,6 +358,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     renderFrames();
     showNotification(`Video clip inserted! ${state.insertedVideos.length} video(s) will be added before your main video.`);
+
+    // Display and play the combined video in the main player
+    videoPlayerArea.classList.remove('hidden');
+    videoElement.src = videoClip.path;
+    videoElement.load();
+    videoElement.play();
 
     // Reset selection
     state.selectedVariation = null;
