@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Luxury Property AI Video Generator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+  <link rel="stylesheet" href="css/main.css"/>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: "#34D399",
+            "background-light": "#F3F4F6",
+            "background-dark": "#121212",
+          },
+          fontFamily: {
+            display: ["Poppins", "sans-serif"],
+          },
+          borderRadius: {
+            DEFAULT: "0.5rem",
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings:
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-gray-800 dark:text-gray-200 antialiased">
+  <div class="flex items-center justify-center min-h-screen p-4 sm:p-6 lg:p-8">
+    <div class="w-full max-w-4xl mx-auto">
+      <div class="text-center mb-10">
+        <h1 class="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white">Luxury Property AI Video Generator</h1>
+        <p class="mt-4 text-lg text-gray-600 dark:text-gray-400">Upload 3 images of your property to automatically generate a stunning promotional video.</p>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800/50 p-8 sm:p-10 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700">
+        <!-- Upload Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8" id="upload-container">
+          <!-- Living Room Card -->
+          <div class="upload-card flex flex-col items-center p-6 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-center transition-all duration-300 hover:border-primary" data-upload-id="living-room">
+            <span class="material-symbols-outlined text-5xl text-gray-400 dark:text-gray-500 mb-3">living</span>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">Living Room</h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Select a high-quality image</p>
+            <label class="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-md text-sm font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors" for="living-room-upload">
+              <span class="material-symbols-outlined text-base">upload_file</span>
+              Choose File
+            </label>
+            <input class="hidden" id="living-room-upload" type="file" accept="image/*"/>
+            <p class="upload-filename text-xs text-gray-500 dark:text-gray-400 mt-3 truncate w-full px-2 h-4"></p>
+          </div>
+
+          <!-- Pool View Card -->
+          <div class="upload-card flex flex-col items-center p-6 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-center transition-all duration-300 hover:border-primary" data-upload-id="pool">
+            <span class="material-symbols-outlined text-5xl text-gray-400 dark:text-gray-500 mb-3">pool</span>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">Pool View</h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Showcase the exterior</p>
+            <label class="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-md text-sm font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors" for="pool-upload">
+              <span class="material-symbols-outlined text-base">upload_file</span>
+              Choose File
+            </label>
+            <input class="hidden" id="pool-upload" type="file" accept="image/*"/>
+            <p class="upload-filename text-xs text-gray-500 dark:text-gray-400 mt-3 truncate w-full px-2 h-4"></p>
+          </div>
+
+          <!-- Kitchen View Card -->
+          <div class="upload-card flex flex-col items-center p-6 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-center transition-all duration-300 hover:border-primary" data-upload-id="kitchen">
+            <span class="material-symbols-outlined text-5xl text-gray-400 dark:text-gray-500 mb-3">kitchen</span>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">Kitchen View</h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Highlight the interior design</p>
+            <label class="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-md text-sm font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors" for="kitchen-upload">
+              <span class="material-symbols-outlined text-base">upload_file</span>
+              Choose File
+            </label>
+            <input class="hidden" id="kitchen-upload" type="file" accept="image/*"/>
+            <p class="upload-filename text-xs text-gray-500 dark:text-gray-400 mt-3 truncate w-full px-2 h-4"></p>
+          </div>
+        </div>
+
+        <!-- Progress Section -->
+        <div class="mt-10">
+          <div class="flex justify-between items-center mb-2">
+            <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Upload Progress</p>
+            <p class="text-sm font-medium text-gray-700 dark:text-gray-300" id="progress-text">0%</p>
+          </div>
+          <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+            <div class="bg-primary h-2.5 rounded-full transition-all duration-500" id="progress-bar" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <!-- Generation Button -->
+        <div class="mt-10 pt-8 border-t border-gray-200 dark:border-gray-700">
+          <button id="generate-btn" class="w-full bg-primary text-black font-bold text-lg py-4 px-6 rounded-lg flex items-center justify-center gap-3 hover:opacity-90 transition-opacity duration-300 focus:outline-none focus:ring-4 focus:ring-primary/50 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+            <span class="material-symbols-outlined">auto_awesome</span>
+            <span id="btn-text">AI Video Generation Start</span>
+          </button>
+        </div>
+
+        <!-- Completion Section (Hidden by default) -->
+        <div id="completion-section" class="hidden mt-8 p-6 bg-primary/10 border-2 border-primary rounded-lg">
+          <div class="text-center mb-6">
+            <span class="material-symbols-outlined text-6xl text-primary mb-3">check_circle</span>
+            <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Video Generation Complete!</h3>
+            <p class="text-gray-600 dark:text-gray-400">Your stunning promotional video is ready.</p>
+          </div>
+          <div class="flex gap-4 justify-center">
+            <button id="download-btn" class="flex items-center gap-2 px-6 py-3 bg-primary text-black font-bold rounded-lg hover:opacity-90 transition-opacity">
+              <span class="material-symbols-outlined">download</span>
+              Download Video
+            </button>
+            <button id="edit-frames-btn" class="flex items-center gap-2 px-6 py-3 bg-gray-700 text-white font-bold rounded-lg hover:bg-gray-600 transition-colors">
+              <span class="material-symbols-outlined">edit</span>
+              Edit Frames
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
