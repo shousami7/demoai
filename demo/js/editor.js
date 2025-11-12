@@ -502,10 +502,10 @@ document.addEventListener('DOMContentLoaded', function() {
         // アニメーション用のクラスを追加
         attachBtn.classList.add('attach-success');
         
-        // 1.5秒後にクラスを削除してアニメーションをリセット
+        // 2秒後にクラスを削除してアニメーションをリセット
         setTimeout(() => {
           attachBtn.classList.remove('attach-success');
-        }, 1500);
+        }, 2000);
       }
       // === ここまで追加 ===
 
