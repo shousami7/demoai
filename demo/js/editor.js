@@ -467,8 +467,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     setTimeout(() => {
       const link = document.createElement('a');
-      link.href = 'videos/combined_video.mp4';
-      link.download = 'edited-luxury-property-video.mp4';
+      link.href = 'videos/output.mp4';
+      link.download = 'output.mp4';
       link.click();
 
       showNotification('Video exported successfully!');

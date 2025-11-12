@@ -152,12 +152,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Download button handler
   downloadBtn.addEventListener('click', function() {
-    showNotification('Video download started! (Mock download)');
+    showNotification('Video download started!');
 
-    // Simulate download
+    // Download the specified video
     const link = document.createElement('a');
-    link.href = 'data:text/plain,Mock Video File';
-    link.download = 'luxury-property-video.mp4';
+    link.href = 'videos/demo1.mp4';
+    link.download = 'Mansion_Promotion_Video_Generated.mp4';
     link.click();
   });
 

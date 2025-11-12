@@ -40,9 +40,9 @@
   </style>
 </head>
 <body class="bg-background-dark font-display">
-  <div class="relative flex h-screen min-h-screen w-full flex-col bg-background-dark overflow-hidden">
+  <div class="relative flex min-h-screen w-full flex-col bg-background-dark overflow-x-hidden">
     <!-- Header -->
-    <header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-[#374151] px-6 py-3">
+    <header class="flex flex-wrap items-center justify-between gap-4 border-b border-solid border-[#374151] px-6 py-3 md:flex-nowrap">
       <div class="flex items-center gap-4 text-white">
         <div class="size-6 text-primary">
           <svg fill="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -67,10 +67,10 @@
     </header>
 
     <!-- Main Content -->
-    <main class="flex flex-1 overflow-hidden">
+    <main class="flex flex-1 flex-col overflow-auto lg:flex-row lg:overflow-hidden">
       <!-- Left Section: Video Player and Frames -->
-      <div class="flex-1 flex flex-col p-6 overflow-y-auto">
-        <div class="w-full max-w-5xl lg:max-w-6xl xl:max-w-7xl mx-auto">
+      <div class="flex-1 flex flex-col p-4 sm:p-6 overflow-y-visible lg:overflow-y-auto">
+        <div class="w-full max-w-5xl xl:max-w-6xl mx-auto">
           <!-- Video Upload Area (shown when no video) -->
           <div class="w-full mb-8" id="upload-area">
             <div class="aspect-video rounded-xl overflow-hidden bg-panel-dark border-2 border-dashed border-[#374151] flex items-center justify-center relative hover:border-primary transition-colors">
@@ -98,7 +98,7 @@
           <!-- Frames Grid -->
           <div class="w-full">
             <h3 class="text-white text-lg font-bold mb-4">Video Frames</h3>
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10 gap-4" id="frames-grid">
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4" id="frames-grid">
               <!-- Frames will be inserted here by JS -->
             </div>
           </div>
@@ -106,7 +106,7 @@
       </div>
 
       <!-- Right Section: AI Chat Panel (420px fixed width) -->
-      <aside id="chat-panel" class="w-[420px] flex-shrink-0 bg-panel-dark border-l border-[#374151] flex flex-col hidden">
+      <aside id="chat-panel" class="w-full lg:w-[420px] flex-shrink-0 bg-panel-dark border-t border-[#374151] lg:border-t-0 lg:border-l flex flex-col hidden mt-6 lg:mt-0 overflow-y-auto">
         <!-- Pick Frame Button -->
         <div class="p-4 border-b border-[#374151]">
           <button id="pick-frame-btn" class="flex w-full min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-5 bg-primary text-black gap-2 text-base font-bold leading-normal tracking-[0.015em] hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed" disabled>
