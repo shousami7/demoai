@@ -306,7 +306,7 @@ document.addEventListener('DOMContentLoaded', function() {
       removeMessage(loadingId);
       
       // Set generated video URL (pre-saved demo video)
-      state.generatedVideoUrl = 'videos/combined_video.mp4';
+      state.generatedVideoUrl = 'videos/demo2.mp4';
       
       // Show video preview with Apply button
       addAIVideoResponse(state.generatedVideoUrl);
@@ -380,7 +380,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Insert the generated video
     const videoClip = {
-      path: state.generatedVideoUrl,
+      path: 'videos/output.mp4', // Always use output.mp4 for the main player
       frameIndex: state.selectedFrameIndex,
       timestamp: frame.timestamp,
       insertedAt: new Date().toISOString()
@@ -399,7 +399,7 @@ document.addEventListener('DOMContentLoaded', function() {
     showNotification(`✓ Video clip will be inserted at frame ${state.selectedFrameIndex + 1}`);
 
     // Display and play the combined video in the main player
-    videoElement.src = videoClip.path;
+    videoElement.src = videoClip.path + '?t=' + new Date().getTime();
     videoElement.load();
     videoElement.play();
 
