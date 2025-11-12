@@ -110,6 +110,7 @@
 .ai-message-content {
   padding: 12px;
   background: #374151;
+  border-radius: 6px;
   color: #D1D5DB;
   font-size: 14px;
   flex: 1;
