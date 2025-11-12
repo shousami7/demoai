@@ -495,6 +495,20 @@ document.addEventListener('DOMContentLoaded', function() {
   imageUploadInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (file && file.type.startsWith('image/')) {
+      // === ここから追加 ===
+      // 添付ボタン（クリップアイコン）を取得
+      const attachBtn = document.getElementById('attach-file-btn');
+      if (attachBtn) {
+        // アニメーション用のクラスを追加
+        attachBtn.classList.add('attach-success');
+        
+        // 1.5秒後にクラスを削除してアニメーションをリセット
+        setTimeout(() => {
+          attachBtn.classList.remove('attach-success');
+        }, 1500);
+      }
+      // === ここまで追加 ===
+
       handleImageUpload(file);
     }
   });
