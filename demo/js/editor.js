@@ -547,10 +547,4 @@ document.addEventListener('DOMContentLoaded', function() {
       showNotification('Please drop a valid video file');
     }
   }); // <--- Corrected closing bracket for drop event listener
-
-  if (attachFileBtn && imageUploadInput) {
-    attachFileBtn.addEventListener('click', () => {
-      imageUploadInput.click(); // Programmatically click the hidden file input
-    });
-  }
 }); // <--- Corrected closing bracket for DOMContentLoaded
