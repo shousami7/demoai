@@ -70,35 +70,37 @@
     <main class="flex flex-1 overflow-hidden">
       <!-- Left Section: Video Player and Frames -->
       <div class="flex-1 flex flex-col p-6 overflow-y-auto">
-        <!-- Video Upload Area (shown when no video) -->
-        <div class="w-full max-w-5xl mx-auto mb-8" id="upload-area">
-          <div class="aspect-video rounded-xl overflow-hidden bg-panel-dark border-2 border-dashed border-[#374151] flex items-center justify-center relative hover:border-primary transition-colors">
-            <div class="text-center p-8">
-              <span class="material-symbols-outlined text-6xl text-gray-500 mb-4 block">upload_file</span>
-              <h3 class="text-white text-xl font-bold mb-2">Upload Your Video</h3>
-              <p class="text-gray-400 mb-6">Select a video file to start editing with AI</p>
-              <input type="file" id="video-input" accept="video/*" class="hidden">
-              <button id="upload-btn" class="flex min-w-[200px] mx-auto cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-primary text-black text-base font-bold leading-normal tracking-[0.015em] hover:opacity-90 transition-opacity gap-2">
-                <span class="material-symbols-outlined">video_file</span>
-                <span class="truncate">Select Video File</span>
-              </button>
+        <div class="w-full max-w-5xl lg:max-w-6xl xl:max-w-7xl mx-auto">
+          <!-- Video Upload Area (shown when no video) -->
+          <div class="w-full mb-8" id="upload-area">
+            <div class="aspect-video rounded-xl overflow-hidden bg-panel-dark border-2 border-dashed border-[#374151] flex items-center justify-center relative hover:border-primary transition-colors">
+              <div class="text-center p-8">
+                <span class="material-symbols-outlined text-6xl text-gray-500 mb-4 block">upload_file</span>
+                <h3 class="text-white text-xl font-bold mb-2">Upload Your Video</h3>
+                <p class="text-gray-400 mb-6">Select a video file to start editing with AI</p>
+                <input type="file" id="video-input" accept="video/*" class="hidden">
+                <button id="upload-btn" class="flex min-w-[200px] mx-auto cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-primary text-black text-base font-bold leading-normal tracking-[0.015em] hover:opacity-90 transition-opacity gap-2">
+                  <span class="material-symbols-outlined">video_file</span>
+                  <span class="truncate">Select Video File</span>
+                </button>
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- Video Player (shown when video is loaded) -->
-        <div class="w-full max-w-5xl mx-auto mb-8 hidden" id="video-player-area">
-          <div class="aspect-video rounded-xl overflow-hidden bg-black flex items-center justify-center relative" id="video-container">
-            <video id="video-element" class="w-full h-full object-contain" controls></video>
+          <!-- Video Player (shown when video is loaded) -->
+          <div class="w-full mb-8 hidden" id="video-player-area">
+            <div class="aspect-video rounded-xl overflow-hidden bg-black flex items-center justify-center relative" id="video-container">
+              <video id="video-element" class="w-full h-full object-contain" controls></video>
+            </div>
+            
           </div>
-          
-        </div>
 
-        <!-- Frames Grid -->
-        <div class="w-full">
-          <h3 class="text-white text-lg font-bold mb-4">Video Frames</h3>
-          <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4" id="frames-grid">
-            <!-- Frames will be inserted here by JS -->
+          <!-- Frames Grid -->
+          <div class="w-full">
+            <h3 class="text-white text-lg font-bold mb-4">Video Frames</h3>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10 gap-4" id="frames-grid">
+              <!-- Frames will be inserted here by JS -->
+            </div>
           </div>
         </div>
       </div>
