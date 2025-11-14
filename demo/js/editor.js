@@ -374,13 +374,20 @@ document.addEventListener('DOMContentLoaded', function() {
   // ==================== NEW: Apply Video to Frame ====================
   
   function applyVideoToFrame() {
-    if (state.selectedFrameIndex === null || !state.generatedVideoUrl) return;
+    if (state.selectedFrameIndex === null) return;
+    if (!state.generatedVideoUrl) {
+      showNotification('Generate a clip before applying it to a frame');
+      return;
+    }
 
     const frame = state.frames[state.selectedFrameIndex];
 
+    // Always display the combined output video in the main player
+    const combinedVideoPath = 'videos/output.mp4';
+
     // Insert the generated video
     const videoClip = {
-      path: 'videos/output.mp4', // Always use output.mp4 for the main player
+      path: combinedVideoPath,
       frameIndex: state.selectedFrameIndex,
       timestamp: frame.timestamp,
       insertedAt: new Date().toISOString()
@@ -398,10 +405,61 @@ document.addEventListener('DOMContentLoaded', function() {
     renderFrames();
     showNotification(`✓ Video clip will be inserted at frame ${state.selectedFrameIndex + 1}`);
 
-    // Display and play the combined video in the main player
-    videoElement.src = videoClip.path + '?t=' + new Date().getTime();
+    // Ensure the player is visible before updating the src
+    uploadArea.classList.add('hidden');
+    videoPlayerArea.classList.remove('hidden');
+    chatPanel.classList.remove('hidden');
+
+    // Completely reset the video element
+    console.log('Resetting video player...');
+    videoElement.pause();
+    videoElement.removeAttribute('src');
     videoElement.load();
-    videoElement.play();
+
+    // Wait a moment before loading new video
+    setTimeout(() => {
+      // Display and play the combined video in the main player
+      const videoUrl = combinedVideoPath + '?t=' + new Date().getTime();
+      console.log('Loading video:', videoUrl);
+
+      // Remove old event listeners
+      videoElement.onerror = null;
+      videoElement.onloadeddata = null;
+
+      // Add error handler
+      videoElement.onerror = (e) => {
+        console.error('Video load error:', e);
+        console.error('Video error code:', videoElement.error?.code);
+        console.error('Video error message:', videoElement.error?.message);
+        showNotification('Error loading video. Check console for details.');
+      };
+
+      // Add success handler
+      videoElement.onloadeddata = () => {
+        console.log('Video loaded successfully');
+        console.log('Video duration:', videoElement.duration);
+        console.log('Video dimensions:', videoElement.videoWidth, 'x', videoElement.videoHeight);
+      };
+
+      // Set new source
+      videoElement.src = videoUrl;
+      videoElement.load();
+
+      // Play with promise handling
+      videoElement.onloadedmetadata = () => {
+        const playPromise = videoElement.play();
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => {
+              console.log('Video playing successfully');
+            })
+            .catch(error => {
+              console.error('Autoplay error:', error);
+              showNotification('Click the video to play (autoplay blocked by browser)');
+            });
+        }
+      };
+    }, 100); // 100ms delay
 
     // Reset selection
     state.selectedVariation = null;
