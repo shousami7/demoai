@@ -10,7 +10,8 @@ document.addEventListener('DOMContentLoaded', function() {
     videoLoaded: false,
     insertedVideos: [], // Track videos to be inserted before the main video
     uploadedImage: null, // NEW: Track uploaded image
-    generatedVideoUrl: null // NEW: Track generated video URL
+    generatedVideoUrl: null, // NEW: Track generated video URL
+    generatedThumbnailUrl: null
   };
 
   // DOM elements
@@ -307,6 +308,7 @@ document.addEventListener('DOMContentLoaded', function() {
       
       // Set generated video URL (pre-saved demo video)
       state.generatedVideoUrl = 'videos/demo2.mp4';
+      state.generatedThumbnailUrl = 'images/pic4.png'; // Set the thumbnail to pic4.png
       
       // Show video preview with Apply button
       addAIVideoResponse(state.generatedVideoUrl);
@@ -396,7 +398,7 @@ document.addEventListener('DOMContentLoaded', function() {
     state.insertedVideos.push(videoClip);
 
     // Update frame to show it has a video inserted
-    frame.url = 'images/correct.png'; // Thumbnail showing it's been replaced
+    frame.url = state.generatedThumbnailUrl || 'images/pic4.png'; // Use the new thumbnail
     frame.edited = true;
     frame.hasVideo = true;
 
@@ -464,6 +466,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Reset selection
     state.selectedVariation = null;
     state.generatedVideoUrl = null;
+    state.generatedThumbnailUrl = null; // Reset the thumbnail
   }
 
   // ==================== Remove Message ====================
