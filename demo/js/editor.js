@@ -219,6 +219,41 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
+  function generateThumbnailFromVideo(videoUrl, timestamp) {
+    return new Promise((resolve, reject) => {
+        const video = document.createElement('video');
+        video.src = videoUrl;
+        video.muted = true;
+        video.crossOrigin = "anonymous"; // Important for cross-origin videos if applicable
+
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+
+        video.onloadedmetadata = () => {
+            video.currentTime = timestamp;
+        };
+
+        video.onseeked = () => {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const frameData = canvas.toDataURL('image/jpeg', 0.8);
+            // Cleanup
+            video.remove();
+            canvas.remove();
+            resolve(frameData);
+        };
+
+        video.onerror = (err) => {
+            console.error("Error loading video for thumbnail generation:", err);
+            // Cleanup
+            video.remove();
+            canvas.remove();
+            reject(new Error('Could not generate thumbnail from video.'));
+        };
+    });
+  }
+
   // ==================== Render Frames Grid ====================
   
   function renderFrames() {
@@ -257,7 +292,7 @@ document.addEventListener('DOMContentLoaded', function() {
     state.selectedVariation = null;
 
     renderFrames();
-    updateChatUI();
+    updateChatUI({ resetChat: true });
 
     chatInput.disabled = false;
     sendBtn.disabled = false;
@@ -266,25 +301,65 @@ document.addEventListener('DOMContentLoaded', function() {
     showNotification(`Frame ${index + 1} selected`);
   }
 
-  function updateChatUI() {
+  function updateChatUI(options = {}) {
     if (state.selectedFrameIndex === null) return;
 
     const frame = state.frames[state.selectedFrameIndex];
+    if (!frame) return;
 
-    chatContainer.innerHTML = `
-      <div class="selected-frame-indicator">
-        <div class="selected-frame-thumbnail" style="background-image: url('${frame.url}')"></div>
-        <div class="selected-frame-info">
-          <div class="selected-frame-title">Editing Frame ${state.selectedFrameIndex + 1}</div>
-          <div class="selected-frame-timestamp">Timestamp: ${frame.timestamp}</div>
-        </div>
+    const { resetChat = false } = options;
+    let indicator = chatContainer.querySelector('.selected-frame-indicator');
+
+    if (resetChat) {
+      chatContainer.innerHTML = '';
+      indicator = null;
+    }
+
+    const indicatorHTML = `
+      <div class="selected-frame-thumbnail" style="background-image: url('${frame.url}')"></div>
+      <div class="selected-frame-info">
+        <div class="selected-frame-title">Editing Frame ${state.selectedFrameIndex + 1}</div>
+        <div class="selected-frame-timestamp">Timestamp: ${frame.timestamp}</div>
       </div>
     `;
+
+    if (!indicator) {
+      if (!resetChat) {
+        const placeholder = chatContainer.querySelector('.text-center');
+        if (placeholder && placeholder.textContent?.includes('Select a frame')) {
+          placeholder.remove();
+        }
+      }
+
+      indicator = document.createElement('div');
+      indicator.className = 'selected-frame-indicator';
+      indicator.innerHTML = indicatorHTML;
+      chatContainer.insertBefore(indicator, chatContainer.firstChild);
+      return;
+    }
+
+    const thumbnail = indicator.querySelector('.selected-frame-thumbnail');
+    const title = indicator.querySelector('.selected-frame-title');
+    const timestamp = indicator.querySelector('.selected-frame-timestamp');
+
+    if (thumbnail) {
+      thumbnail.style.backgroundImage = `url('${frame.url}')`;
+    } else {
+      indicator.innerHTML = indicatorHTML;
+    }
+
+    if (title) {
+      title.textContent = `Editing Frame ${state.selectedFrameIndex + 1}`;
+    }
+
+    if (timestamp) {
+      timestamp.textContent = `Timestamp: ${frame.timestamp}`;
+    }
   }
 
   // ==================== MODIFIED: Send Message ====================
   
-  function sendMessage() {
+  async function sendMessage() {
     const message = chatInput.value.trim();
     if (!message || state.selectedFrameIndex === null) return;
 
@@ -302,13 +377,20 @@ document.addEventListener('DOMContentLoaded', function() {
     sendBtn.disabled = true;
 
     // Simulate 7-second video generation
-    setTimeout(() => {
+    setTimeout(async () => {
       // Remove loading message
       removeMessage(loadingId);
       
       // Set generated video URL (pre-saved demo video)
       state.generatedVideoUrl = 'videos/demo2.mp4';
-      state.generatedThumbnailUrl = 'images/pic4.png'; // Set the thumbnail to pic4.png
+      
+      try {
+        const thumbnailUrl = await generateThumbnailFromVideo(state.generatedVideoUrl, 1); // Get frame at 1 second
+        state.generatedThumbnailUrl = thumbnailUrl;
+      } catch (error) {
+        console.error('Error generating thumbnail:', error);
+        state.generatedThumbnailUrl = 'images/pic4.png'; // Fallback
+      }
       
       // Show video preview with Apply button
       addAIVideoResponse(state.generatedVideoUrl);
@@ -405,6 +487,7 @@ document.addEventListener('DOMContentLoaded', function() {
     state.editedFrames.add(state.selectedFrameIndex);
 
     renderFrames();
+    updateChatUI();
     showNotification(`✓ Video clip will be inserted at frame ${state.selectedFrameIndex + 1}`);
 
     // Ensure the player is visible before updating the src
